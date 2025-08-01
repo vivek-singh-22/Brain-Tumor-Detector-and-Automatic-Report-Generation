@@ -60,7 +60,9 @@ def generate_hybrid_report(json_data):
     seg = json_data['segmentation']
 
     # T5 Input Construction
-    t5_input = f"generate report: {patient['name']} aged {patient['age']} has a {cls['predicted_class']} with confidence {cls['confidence']}. Tumor area is {seg['area_cm2']} cm2."
+    # t5_input = f"generate report: {patient['name']} aged {patient['age']} has a {cls['predicted_class']} with confidence {cls['confidence']}. Tumor area is {seg['area_cm2']} cm2."
+    t5_input_old = f"generate report: {patient['name']} aged {patient['age']} has a {cls['predicted_class']} with confidence {cls['confidence']}. Tumor area is {seg['area_cm2']} cm2."
+    t5_input = f"generate report: {patient['name']} aged {patient['age']} has a {cls['predicted_class']}tumor located in the **{seg['location_name']}** of the brain with confidence {cls['confidence']}. Tumor area is {seg['area_cm2']} cm2."
     input_ids = tokenizer.encode(t5_input, return_tensors="pt")
     output = output = t5_model.generate(
     input_ids,
@@ -157,6 +159,23 @@ def save_report_to_pdf(report_text, filename):
     os.makedirs("reports", exist_ok=True)
     pdf.output(save_path)
     return save_path
+  # --- Approximate Brain Region ---
+def predict_brain_region(x, y, w, h, image_width, image_height):
+    center_x = x + w // 2
+    center_y = y + h // 2
+
+    # Approximate hemisphere
+    hemisphere = "Left Hemisphere" if center_x < image_width / 2 else "Right Hemisphere"
+
+    # Approximate anterior/posterior region
+    if center_y < image_height / 3:
+        region = "Frontal Lobe"
+    elif center_y < 2 * image_height / 3:
+        region = "Parietal Region"
+    else:
+        region = "Occipital/Posterior Region"
+
+    return f"{hemisphere}, {region}"
 
 def display_download_button(filepath):
     with open(filepath, "rb") as f:
@@ -176,6 +195,7 @@ with st.form("patient_form"):
 
 if submitted and uploaded_file is not None:
     img = Image.open(uploaded_file).convert("RGB")
+    original_width, original_height = img.size
     st.image(img, caption="Uploaded Image", use_container_width=True)
 
     img_resized = img.resize((512, 512))
@@ -209,6 +229,8 @@ if submitted and uploaded_file is not None:
     st.image(segmented_overlay, caption="Segmentation Mask Overlay", use_container_width=True)
 
     x, y, w, h, area_cm2, conf_percent = get_tumor_info(seg_mask, prob_map)
+    location_name = None
+    location_name = predict_brain_region(x, y, w, h, original_width, original_height)
     bbox_info = {"x": x, "y": y, "width": w, "height": h} if None not in (x, y, w, h) else None
 
     result_json = {
@@ -227,7 +249,8 @@ if submitted and uploaded_file is not None:
             "tumor_area_pixels": int(np.sum(seg_mask > 0)),
             "bounding_box": bbox_info,
             "area_cm2": area_cm2,
-            "confidence_percent": conf_percent
+            "confidence_percent": conf_percent,
+            "location_name": location_name
         }
     }
 
