@@ -15,5 +15,7 @@ reportlab
 tensorflow
 keras
 h5py
+torch==2.1.0
+
 
 
