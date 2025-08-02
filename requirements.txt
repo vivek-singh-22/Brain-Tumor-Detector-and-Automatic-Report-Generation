@@ -11,3 +11,5 @@ streamlit
 huggingface_hub
 albumentations
 fpdf
+sentencepiece
+reportlab
