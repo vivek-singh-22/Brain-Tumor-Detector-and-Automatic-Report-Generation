@@ -21,6 +21,9 @@ COPY brain_tumor_app.py .
 COPY brain_tumor_classifier.h5 .
 COPY tumor_segmentation_model.h5 .
 
+RUN ls -lh brain_tumor_classifier.keras
+RUN ls -lh tumor_segmentation_model.h5
+
 # Copy the rest of the code
 COPY . .
 
@@ -28,6 +31,7 @@ EXPOSE 8501
 
 # Run the app
 CMD ["streamlit", "run", "brain_tumor_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
 
 
 
