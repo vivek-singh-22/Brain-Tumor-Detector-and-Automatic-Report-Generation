@@ -27,4 +27,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: your-dockerhub-username/brain-tumor-app:latest
+        tags: vivek2210/brain-tumor-app:latest
