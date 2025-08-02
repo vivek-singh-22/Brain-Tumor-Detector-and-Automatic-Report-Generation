@@ -12,7 +12,8 @@ albumentations
 fpdf
 sentencepiece
 reportlab
-tensorflow==2.19.0
-keras==2.19.0
-h5py>=3.9.0
+tensorflow
+keras
+h5py
+
 
