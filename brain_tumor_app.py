@@ -13,7 +13,7 @@ from fpdf import FPDF
 import base64
 
 # === Load Models ===
-classifier_model = load_model("brain_tumor_classifier.keras")
+classifier_model = load_model("brain_tumor_classifier.h5", compile=False)
 segment_model = load_model("tumor_segmentation_model.h5", compile=False)
 
 
@@ -282,3 +282,4 @@ if submitted and uploaded_file is not None:
 
     pdf_path = save_report_to_pdf(full_report, f"{pid}_{name}_report.pdf")
     display_download_button(pdf_path)
+
